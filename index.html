@@ -29,17 +29,17 @@
             <button class="btn-reset" onclick="resetPoints()">🔄</button>
         </div>
 
-        <div id="progress-container" style="display:none; width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; margin-bottom:20px; overflow:hidden;">
+        <div id="progress-container" style="display:none; width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; margin-bottom:30px; overflow:hidden;">
             <div id="progress-bar" style="width:0%; height:100%; background:var(--success); transition:0.3s;"></div>
         </div>
 
         <div id="menu-view" class="glass-panel">
             <h3>Wähle deinen Modus:</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="btn-menu" onclick="setMode('flashcard')">📇 Karten</button>
-                <button class="btn-menu" onclick="setMode('quiz')">❓ Quiz</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <button id="mode-flash-btn" class="btn-menu" onclick="setMode('flashcard')">📇 Karten</button>
+                <button id="mode-quiz-btn" class="btn-menu" onclick="setMode('quiz')">❓ Quiz</button>
             </div>
-            <hr style="opacity:0.1; margin: 15px 0;">
+            <hr style="opacity:0.1; margin: 25px 0;">
             <button class="btn-menu" onclick="startAll()">📚 Alle Vokabeln</button>
             <button class="btn-menu" onclick="showSelection()">🎯 Kapitel wählen</button>
             <button id="error-btn-menu" class="btn-menu btn-error" onclick="startErrorMode()" style="display:none;">⚠️ Stolperwörter</button>
@@ -61,8 +61,13 @@
             </div>
             <div class="card-container" onclick="flipCard()">
                 <div class="card" id="card">
-                    <div class="card-face front"><div id="front-text">Lade...</div><div class="hint">Klicken zum Drehen</div></div>
-                    <div class="card-face back"><div id="back-text">Loading...</div></div>
+                    <div class="card-face front">
+                        <div id="front-text">Lade...</div>
+                        <div class="hint">Klicken zum Drehen</div>
+                    </div>
+                    <div class="card-face back">
+                        <div id="back-text">Loading...</div>
+                    </div>
                 </div>
             </div>
             <div class="controls">
@@ -76,11 +81,10 @@
                 <button class="btn-back" onclick="showMenu()">🏠 Menü</button>
                 <span id="mode-ind-2" style="font-size: 0.8rem; opacity: 0.6;"></span>
             </div>
-            <div class="glass-panel" style="margin-bottom:20px; padding:40px;">
-                <div id="quiz-question" style="font-size:2rem; font-weight:bold; color:var(--primary);">Wort</div>
-                <div style="font-size:0.8rem; opacity:0.5; margin-top:10px;">Wähle die richtige Übersetzung:</div>
+            <div class="glass-panel quiz-question-panel">
+                <div id="quiz-question">Wort</div>
             </div>
-            <div id="quiz-options" style="display:flex; flex-direction:column; gap:10px;">
+            <div id="quiz-options">
                 </div>
         </div>
     </div>

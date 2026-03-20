@@ -51,14 +51,19 @@ let currentIndex = 0;
 let points = parseInt(localStorage.getItem('lottaPoints')) || 0;
 let streak = 0;
 let wrongWords = JSON.parse(localStorage.getItem('lottaErrors')) || [];
-let currentTrainerMode = 'flashcard'; // Default
+let currentTrainerMode = localStorage.getItem('lottaMode') || 'flashcard'; 
 
 const avatars = ["🐛", "🐌", "🐣", "🐝", "🐥", "🦋", "🦁", "👑"];
 
-// Navigation & Modus
 function setMode(mode) {
     currentTrainerMode = mode;
-    alert("Modus gewechselt zu: " + (mode === 'flashcard' ? "Karteikarten" : "Quiz"));
+    localStorage.setItem('lottaMode', mode);
+    updateModeButtons();
+}
+
+function updateModeButtons() {
+    document.getElementById('mode-flash-btn').classList.toggle('active', currentTrainerMode === 'flashcard');
+    document.getElementById('mode-quiz-btn').classList.toggle('active', currentTrainerMode === 'quiz');
 }
 
 function showMenu() {
@@ -68,6 +73,7 @@ function showMenu() {
     document.getElementById('quiz-view').style.display = 'none';
     document.getElementById('progress-container').style.display = 'none';
     document.getElementById('error-btn-menu').style.display = wrongWords.length > 0 ? 'block' : 'none';
+    updateModeButtons();
 }
 
 function showSelection() {
@@ -92,7 +98,7 @@ function toggleUnit(unit) {
 }
 
 function launchTrainer(list, modeName) {
-    activeList = list.sort(() => Math.random() - 0.5); // Liste mischen
+    activeList = list.sort(() => Math.random() - 0.5); 
     currentIndex = 0;
     document.getElementById('progress-container').style.display = 'block';
     
@@ -116,7 +122,6 @@ function startSelected() {
 }
 function startErrorMode() { launchTrainer([...wrongWords], "Fehler"); }
 
-// Trainer Logik
 function updateContent() {
     const progress = (currentIndex / activeList.length * 100) + "%";
     document.getElementById('progress-bar').style.width = progress;
@@ -138,7 +143,6 @@ function renderQuiz() {
     const optionsDiv = document.getElementById('quiz-options');
     optionsDiv.innerHTML = "";
     
-    // Falsche Antworten finden
     let others = vocabData.filter(v => v.en !== current.en).sort(() => Math.random() - 0.5).slice(0, 2);
     let choices = [current, ...others].sort(() => Math.random() - 0.5);
     
@@ -146,12 +150,12 @@ function renderQuiz() {
         const btn = document.createElement('button');
         btn.className = 'quiz-opt';
         btn.innerText = choice.en;
-        btn.onclick = () => checkQuiz(choice.en === current.en, btn);
+        btn.onclick = () => checkQuiz(choice.en === current.en, btn, current.en);
         optionsDiv.appendChild(btn);
     });
 }
 
-function checkQuiz(isCorrect, btn) {
+function checkQuiz(isCorrect, btn, correctWord) {
     const allBtns = document.querySelectorAll('.quiz-opt');
     allBtns.forEach(b => b.disabled = true);
     
@@ -161,7 +165,11 @@ function checkQuiz(isCorrect, btn) {
         setTimeout(() => nextCard(true), 800);
     } else {
         btn.classList.add('opt-wrong');
-        setTimeout(() => nextCard(false), 1200);
+        // Richtige Antwort grün markieren zum Lernen
+        allBtns.forEach(b => {
+            if(b.innerText === correctWord) b.classList.add('opt-correct');
+        });
+        setTimeout(() => nextCard(false), 1800); // Längere Pause zum Einprägen
     }
 }
 
