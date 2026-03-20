@@ -22,19 +22,26 @@
         </div>
 
         <div id="menu-view" class="glass-panel">
-            <h3>Was möchtest du üben?</h3>
+            <h3>Hauptmenü</h3>
             <button class="btn-menu" onclick="startAll()">📚 Alle Vokabeln</button>
-            <button class="btn-menu" onclick="showSelection()">🎯 Gezielte Auswahl</button>
-            <button id="error-btn-menu" class="btn-menu" onclick="startErrorMode()" style="display:none;">⚠️ Nur Fehler</button>
+            <button class="btn-menu" onclick="showSelection()">🎯 Kapitel wählen</button>
+            <button id="error-btn-menu" class="btn-menu btn-error" onclick="startErrorMode()" style="display:none;">⚠️ Nur Stolperwörter</button>
         </div>
 
         <div id="selection-view" class="glass-panel" style="display:none;">
-            <h3>Wähle deine Wörter:</h3>
+            <div class="view-header">
+                <button class="btn-back" onclick="showMenu()">⬅ Zurück</button>
+                <h3>Wähle Kapitel</h3>
+            </div>
             <div id="selection-list" class="scroll-list"></div>
-            <button class="btn correct" style="width:100%" onclick="startSelected()">Auswahl starten 🚀</button>
+            <button class="btn correct" style="width:100%" onclick="startSelected()">Start 🚀</button>
         </div>
 
         <div id="trainer-view" style="display:none;">
+            <div class="view-header">
+                <button class="btn-back" onclick="showMenu()">🏠 Menü</button>
+                <span id="mode-indicator" style="font-size: 0.8rem; opacity: 0.6;"></span>
+            </div>
             <div class="card-container" id="card-container">
                 <div class="card" id="card">
                     <div class="card-face front">
@@ -50,13 +57,6 @@
                 <button class="btn wrong" onclick="nextCard(false)">❌ Noch mal</button>
                 <button class="btn correct" onclick="nextCard(true)">Gewusst! ✅</button>
             </div>
-            <button class="btn-menu" style="margin-top:20px; opacity:0.7" onclick="showMenu()">🏠 Zum Menü</button>
-        </div>
-
-        <div id="error-view" class="glass-panel" style="display:none;">
-            <h2>Deine Stolperwörter</h2>
-            <div id="error-list" class="scroll-list"></div>
-            <button class="btn correct" style="width:100%" onclick="showMenu()">Zurück zum Menü</button>
         </div>
     </div>
     <script src="script.js"></script>
