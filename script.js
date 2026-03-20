@@ -1,4 +1,3 @@
-// Vokabeln mit Kapitel-Zuweisung
 const vocabData = [
     { unit: "Check-in", de: "Mann", en: "man" }, { unit: "Check-in", de: "Männer", en: "men" },
     { unit: "Check-in", de: "sich vordrängeln", en: "to jump the queue" }, { unit: "Check-in", de: "Schlange stehen", en: "to stand in line" },
@@ -50,72 +49,70 @@ const vocabData = [
 let activeList = [];
 let currentIndex = 0;
 let points = parseInt(localStorage.getItem('lottaPoints')) || 0;
+let streak = 0;
 let wrongWords = JSON.parse(localStorage.getItem('lottaErrors')) || [];
+
+const avatars = ["🐛", "🐌", "🐣", "🐝", "🐥", "🦋", "🦁", "👑"];
 
 // Navigation
 function showMenu() {
     document.getElementById('menu-view').style.display = 'block';
     document.getElementById('selection-view').style.display = 'none';
     document.getElementById('trainer-view').style.display = 'none';
+    document.getElementById('progress-container').style.display = 'none';
     document.getElementById('error-btn-menu').style.display = wrongWords.length > 0 ? 'block' : 'none';
 }
 
 function showSelection() {
     const listDiv = document.getElementById('selection-list');
     listDiv.innerHTML = "";
-    
-    // Gruppiere nach Units
     const units = [...new Set(vocabData.map(v => v.unit))];
     units.forEach(unit => {
-        listDiv.innerHTML += `<div class="unit-header">${unit}</div>`;
-        vocabData.filter(v => v.unit === unit).forEach((word, idx) => {
-            const globalIdx = vocabData.indexOf(word);
-            listDiv.innerHTML += `
-                <div style="padding: 8px 0;">
-                    <input type="checkbox" id="v-${globalIdx}" value="${globalIdx}">
-                    <label for="v-${globalIdx}">${word.de}</label>
-                </div>`;
+        listDiv.innerHTML += `
+            <div style="margin-top:15px; display:flex; justify-content:space-between; border-bottom:1px solid var(--primary);">
+                <span style="font-weight:bold;">${unit}</span>
+                <button class="btn-back" style="font-size:0.6rem;" onclick="toggleUnit('${unit}')">Alle</button>
+            </div>`;
+        vocabData.filter(v => v.unit === unit).forEach((word) => {
+            const gIdx = vocabData.indexOf(word);
+            listDiv.innerHTML += `<div style="padding:5px 0;"><input type="checkbox" class="u-${unit}" id="v-${gIdx}" value="${gIdx}"> <label for="v-${gIdx}">${word.de}</label></div>`;
         });
     });
     document.getElementById('menu-view').style.display = 'none';
     document.getElementById('selection-view').style.display = 'block';
 }
 
-function startAll() {
-    activeList = [...vocabData];
-    currentIndex = 0;
-    document.getElementById('mode-indicator').innerText = "Modus: Alle";
-    launchTrainer();
+function toggleUnit(unit) {
+    const cbs = document.querySelectorAll(`.u-${unit}`);
+    const someOff = Array.from(cbs).some(cb => !cb.checked);
+    cbs.forEach(cb => cb.checked = someOff);
 }
 
-function startSelected() {
-    const selected = Array.from(document.querySelectorAll('#selection-list input:checked')).map(cb => vocabData[cb.value]);
-    if(selected.length === 0) return alert("Wähle Wörter aus!");
-    activeList = selected;
+function launchTrainer(list, mode) {
+    activeList = list;
     currentIndex = 0;
-    document.getElementById('mode-indicator').innerText = "Modus: Auswahl";
-    launchTrainer();
-}
-
-function startErrorMode() {
-    activeList = [...wrongWords];
-    currentIndex = 0;
-    document.getElementById('mode-indicator').innerText = "Modus: Stolperwörter";
-    launchTrainer();
-}
-
-function launchTrainer() {
+    document.getElementById('mode-indicator').innerText = mode;
     document.getElementById('menu-view').style.display = 'none';
     document.getElementById('selection-view').style.display = 'none';
     document.getElementById('trainer-view').style.display = 'block';
+    document.getElementById('progress-container').style.display = 'block';
     updateCard();
 }
 
-// Trainer Logik
+function startAll() { launchTrainer([...vocabData], "Alle"); }
+function startSelected() {
+    const sel = Array.from(document.querySelectorAll('#selection-list input:checked')).map(cb => vocabData[cb.value]);
+    if(sel.length === 0) return alert("Wähle etwas aus!");
+    launchTrainer(sel, "Auswahl");
+}
+function startErrorMode() { launchTrainer([...wrongWords], "Fehler"); }
+
+// Trainer
 document.getElementById('card').addEventListener('click', () => document.getElementById('card').classList.toggle('flipped'));
 
 function updateCard() {
     document.getElementById('card').classList.remove('flipped');
+    document.getElementById('progress-bar').style.width = (currentIndex / activeList.length * 100) + "%";
     setTimeout(() => {
         document.getElementById('front-text').innerText = activeList[currentIndex].de;
         document.getElementById('back-text').innerText = activeList[currentIndex].en;
@@ -125,9 +122,13 @@ function updateCard() {
 function nextCard(isCorrect) {
     if (isCorrect) {
         points += 10;
-        // Wenn es richtig war, aus Fehlerliste entfernen? (Optional)
+        streak++;
+        if (streak % 5 === 0) { // Belohnung alle 5er Streak
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+        }
     } else {
         points = Math.max(0, points - 5);
+        streak = 0;
         if (!wrongWords.some(v => v.en === activeList[currentIndex].en)) {
             wrongWords.push(activeList[currentIndex]);
             localStorage.setItem('lottaErrors', JSON.stringify(wrongWords));
@@ -135,36 +136,31 @@ function nextCard(isCorrect) {
     }
     currentIndex++;
     if (currentIndex >= activeList.length) {
-        alert("Fertig!");
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        alert("Runde beendet! ✨");
         showMenu();
     } else {
-        updateScore();
+        updateUI();
         updateCard();
     }
 }
 
-function updateScore() {
+function updateUI() {
     document.getElementById('score').innerText = points;
+    document.getElementById('streak').innerText = streak;
     localStorage.setItem('lottaPoints', points);
-    const grade = document.getElementById('grade');
-    if (points >= 500) grade.innerText = "⭐ Legend ⭐";
-    else if (points >= 300) grade.innerText = "🔥 Pro 🔥";
-    else if (points >= 150) grade.innerText = "✅ Learner ✅";
-    else grade.innerText = "Newbie 🚀";
+    
+    // Level & Avatar System
+    let levelIdx = Math.min(Math.floor(points / 100), avatars.length - 1);
+    document.getElementById('avatar-container').innerText = avatars[levelIdx];
+    
+    const grades = ["Newbie 🚀", "Learner ✅", "Trainee 📚", "Advanced 💡", "Expert 🔥", "Pro ✨", "Master 👑", "Legend 🏆"];
+    document.getElementById('grade').innerText = grades[levelIdx] || grades[grades.length-1];
 }
 
 function resetPoints() {
-    const choice = confirm("Punkte auf 0 setzen? (OK klickt für JA). Abbrechen löscht auch die Fehlerliste!");
-    if (choice) {
-        points = 0;
-        updateScore();
-    } else {
-        if(confirm("Willst du WIRKLICH auch alle gespeicherten Fehler löschen?")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
+    if (confirm("Fortschritt löschen?")) { localStorage.clear(); location.reload(); }
 }
 
 showMenu();
-updateScore();
+updateUI();
