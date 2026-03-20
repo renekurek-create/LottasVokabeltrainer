@@ -19,92 +19,55 @@ body {
     margin: 0;
 }
 
-.container {
-    width: 100%;
-    max-width: 500px;
-    padding: 20px;
-    text-align: center;
-}
+.container { width: 100%; max-width: 500px; padding: 20px; text-align: center; }
 
-h1 {
-    font-size: 2.2rem;
-    background: linear-gradient(to right, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 20px;
-}
+h1 { font-size: 2.2rem; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
 
-.score-board {
+.glass-panel {
     background: var(--card-bg);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 24px;
-    padding: 15px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin-bottom: 30px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
+.scroll-list {
+    text-align: left;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding-right: 10px;
+}
+
+.btn-menu {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--primary);
+    color: var(--text);
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-menu:hover { background: var(--primary); color: #0f172a; }
+
+/* ... Rest deines bisherigen Card-CSS (Card, Faces, Scoreboard) ... */
+.score-board { background: var(--card-bg); border-radius: 24px; padding: 15px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
 .score-item .label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.5; }
 .score-item .value { font-size: 1.6rem; font-weight: bold; color: var(--primary); }
-
-.btn-reset {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
-    color: var(--text);
-    padding: 5px 10px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.card-container {
-    perspective: 1000px;
-    height: 300px;
-    margin-bottom: 40px;
-}
-
-.card {
-    width: 100%; height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+.btn-reset { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text); padding: 5px 10px; border-radius: 10px; cursor: pointer; }
+.card-container { perspective: 1000px; height: 300px; margin-bottom: 40px; }
+.card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 .card.flipped { transform: rotateY(180deg); }
-
-.card-face {
-    position: absolute;
-    width: 100%; height: 100%;
-    backface-visibility: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 30px;
-    padding: 30px;
-    box-sizing: border-box;
-    font-size: 2.4rem;
-    font-weight: bold;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
+.card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; padding: 30px; box-sizing: border-box; font-size: 2.4rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.1); }
 .front { background: rgba(255,255,255,0.03); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
-.hint { font-size: 0.8rem; opacity: 0.4; margin-top: 15px; font-weight: normal; }
 .back { background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; transform: rotateY(180deg); }
-
+.hint { font-size: 0.8rem; opacity: 0.4; margin-top: 15px; font-weight: normal; }
 .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-
-.btn {
-    padding: 18px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn:active { transform: scale(0.95); }
+.btn { padding: 18px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 20px; cursor: pointer; }
 .correct { background: var(--success); color: #064e3b; }
 .wrong { background: transparent; border: 2px solid var(--danger); color: var(--danger); }
