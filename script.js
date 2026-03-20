@@ -51,14 +51,21 @@ let currentIndex = 0;
 let points = parseInt(localStorage.getItem('lottaPoints')) || 0;
 let streak = 0;
 let wrongWords = JSON.parse(localStorage.getItem('lottaErrors')) || [];
+let currentTrainerMode = 'flashcard'; // Default
 
 const avatars = ["🐛", "🐌", "🐣", "🐝", "🐥", "🦋", "🦁", "👑"];
 
-// Navigation
+// Navigation & Modus
+function setMode(mode) {
+    currentTrainerMode = mode;
+    alert("Modus gewechselt zu: " + (mode === 'flashcard' ? "Karteikarten" : "Quiz"));
+}
+
 function showMenu() {
     document.getElementById('menu-view').style.display = 'block';
     document.getElementById('selection-view').style.display = 'none';
-    document.getElementById('trainer-view').style.display = 'none';
+    document.getElementById('flashcard-view').style.display = 'none';
+    document.getElementById('quiz-view').style.display = 'none';
     document.getElementById('progress-container').style.display = 'none';
     document.getElementById('error-btn-menu').style.display = wrongWords.length > 0 ? 'block' : 'none';
 }
@@ -68,11 +75,7 @@ function showSelection() {
     listDiv.innerHTML = "";
     const units = [...new Set(vocabData.map(v => v.unit))];
     units.forEach(unit => {
-        listDiv.innerHTML += `
-            <div style="margin-top:15px; display:flex; justify-content:space-between; border-bottom:1px solid var(--primary);">
-                <span style="font-weight:bold;">${unit}</span>
-                <button class="btn-back" style="font-size:0.6rem;" onclick="toggleUnit('${unit}')">Alle</button>
-            </div>`;
+        listDiv.innerHTML += `<div style="margin-top:15px; display:flex; justify-content:space-between; border-bottom:1px solid var(--primary);"><span style="font-weight:bold;">${unit}</span><button class="btn-back" style="font-size:0.6rem;" onclick="toggleUnit('${unit}')">Alle</button></div>`;
         vocabData.filter(v => v.unit === unit).forEach((word) => {
             const gIdx = vocabData.indexOf(word);
             listDiv.innerHTML += `<div style="padding:5px 0;"><input type="checkbox" class="u-${unit}" id="v-${gIdx}" value="${gIdx}"> <label for="v-${gIdx}">${word.de}</label></div>`;
@@ -88,15 +91,21 @@ function toggleUnit(unit) {
     cbs.forEach(cb => cb.checked = someOff);
 }
 
-function launchTrainer(list, mode) {
-    activeList = list;
+function launchTrainer(list, modeName) {
+    activeList = list.sort(() => Math.random() - 0.5); // Liste mischen
     currentIndex = 0;
-    document.getElementById('mode-indicator').innerText = mode;
+    document.getElementById('progress-container').style.display = 'block';
+    
+    if (currentTrainerMode === 'flashcard') {
+        document.getElementById('mode-ind-1').innerText = modeName;
+        document.getElementById('flashcard-view').style.display = 'block';
+    } else {
+        document.getElementById('mode-ind-2').innerText = modeName;
+        document.getElementById('quiz-view').style.display = 'block';
+    }
     document.getElementById('menu-view').style.display = 'none';
     document.getElementById('selection-view').style.display = 'none';
-    document.getElementById('trainer-view').style.display = 'block';
-    document.getElementById('progress-container').style.display = 'block';
-    updateCard();
+    updateContent();
 }
 
 function startAll() { launchTrainer([...vocabData], "Alle"); }
@@ -107,25 +116,62 @@ function startSelected() {
 }
 function startErrorMode() { launchTrainer([...wrongWords], "Fehler"); }
 
-// Trainer
-document.getElementById('card').addEventListener('click', () => document.getElementById('card').classList.toggle('flipped'));
-
-function updateCard() {
-    document.getElementById('card').classList.remove('flipped');
-    document.getElementById('progress-bar').style.width = (currentIndex / activeList.length * 100) + "%";
-    setTimeout(() => {
-        document.getElementById('front-text').innerText = activeList[currentIndex].de;
-        document.getElementById('back-text').innerText = activeList[currentIndex].en;
-    }, 200);
+// Trainer Logik
+function updateContent() {
+    const progress = (currentIndex / activeList.length * 100) + "%";
+    document.getElementById('progress-bar').style.width = progress;
+    
+    if (currentTrainerMode === 'flashcard') {
+        document.getElementById('card').classList.remove('flipped');
+        setTimeout(() => {
+            document.getElementById('front-text').innerText = activeList[currentIndex].de;
+            document.getElementById('back-text').innerText = activeList[currentIndex].en;
+        }, 200);
+    } else {
+        renderQuiz();
+    }
 }
+
+function renderQuiz() {
+    const current = activeList[currentIndex];
+    document.getElementById('quiz-question').innerText = current.de;
+    const optionsDiv = document.getElementById('quiz-options');
+    optionsDiv.innerHTML = "";
+    
+    // Falsche Antworten finden
+    let others = vocabData.filter(v => v.en !== current.en).sort(() => Math.random() - 0.5).slice(0, 2);
+    let choices = [current, ...others].sort(() => Math.random() - 0.5);
+    
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-opt';
+        btn.innerText = choice.en;
+        btn.onclick = () => checkQuiz(choice.en === current.en, btn);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkQuiz(isCorrect, btn) {
+    const allBtns = document.querySelectorAll('.quiz-opt');
+    allBtns.forEach(b => b.disabled = true);
+    
+    if (isCorrect) {
+        btn.classList.add('opt-correct');
+        document.getElementById('snd-correct').play();
+        setTimeout(() => nextCard(true), 800);
+    } else {
+        btn.classList.add('opt-wrong');
+        setTimeout(() => nextCard(false), 1200);
+    }
+}
+
+function flipCard() { document.getElementById('card').classList.toggle('flipped'); }
 
 function nextCard(isCorrect) {
     if (isCorrect) {
         points += 10;
         streak++;
-        if (streak % 5 === 0) { // Belohnung alle 5er Streak
-            confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-        }
+        if (streak % 5 === 0) confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
     } else {
         points = Math.max(0, points - 5);
         streak = 0;
@@ -141,7 +187,7 @@ function nextCard(isCorrect) {
         showMenu();
     } else {
         updateUI();
-        updateCard();
+        updateContent();
     }
 }
 
@@ -149,11 +195,8 @@ function updateUI() {
     document.getElementById('score').innerText = points;
     document.getElementById('streak').innerText = streak;
     localStorage.setItem('lottaPoints', points);
-    
-    // Level & Avatar System
     let levelIdx = Math.min(Math.floor(points / 100), avatars.length - 1);
     document.getElementById('avatar-container').innerText = avatars[levelIdx];
-    
     const grades = ["Newbie 🚀", "Learner ✅", "Trainee 📚", "Advanced 💡", "Expert 🔥", "Pro ✨", "Master 👑", "Legend 🏆"];
     document.getElementById('grade').innerText = grades[levelIdx] || grades[grades.length-1];
 }
