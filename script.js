@@ -1,3 +1,4 @@
+// Vokabel Data (unverändert)
 const vocabData = [
     { unit: "Check-in", de: "Mann", en: "man" }, { unit: "Check-in", de: "Männer", en: "men" },
     { unit: "Check-in", de: "sich vordrängeln", en: "to jump the queue" }, { unit: "Check-in", de: "Schlange stehen", en: "to stand in line" },
@@ -53,18 +54,8 @@ let streak = 0;
 let wrongWords = JSON.parse(localStorage.getItem('lottaErrors')) || [];
 let currentTrainerMode = localStorage.getItem('lottaMode') || 'flashcard'; 
 
-const avatars = ["🐛", "🐌", "🐣", "🐝", "🐥", "🦋", "🦁", "👑"];
-
-function setMode(mode) {
-    currentTrainerMode = mode;
-    localStorage.setItem('lottaMode', mode);
-    updateModeButtons();
-}
-
-function updateModeButtons() {
-    document.getElementById('mode-flash-btn').classList.toggle('active', currentTrainerMode === 'flashcard');
-    document.getElementById('mode-quiz-btn').classList.toggle('active', currentTrainerMode === 'quiz');
-}
+// Lotta-Edition: Verschiedene Schildkröten-Zustände
+const avatars = ["🐢", "🐢🌱", "🐢✨", "🐢📚", "🐢💡", "🐢🔥", "🐢👑", "🐢🏆"];
 
 function showMenu() {
     document.getElementById('menu-view').style.display = 'block';
@@ -81,10 +72,10 @@ function showSelection() {
     listDiv.innerHTML = "";
     const units = [...new Set(vocabData.map(v => v.unit))];
     units.forEach(unit => {
-        listDiv.innerHTML += `<div style="margin-top:15px; display:flex; justify-content:space-between; border-bottom:1px solid var(--primary);"><span style="font-weight:bold;">${unit}</span><button class="btn-back" style="font-size:0.6rem;" onclick="toggleUnit('${unit}')">Alle</button></div>`;
+        listDiv.innerHTML += `<div style="margin-top:15px; display:flex; justify-content:space-between; border-bottom:2px solid var(--primary);"><span style="font-weight:bold; color:white;">${unit}</span><button class="btn-back" style="font-size:0.6rem;" onclick="toggleUnit('${unit}')">Alle</button></div>`;
         vocabData.filter(v => v.unit === unit).forEach((word) => {
             const gIdx = vocabData.indexOf(word);
-            listDiv.innerHTML += `<div style="padding:5px 0;"><input type="checkbox" class="u-${unit}" id="v-${gIdx}" value="${gIdx}"> <label for="v-${gIdx}">${word.de}</label></div>`;
+            listDiv.innerHTML += `<div style="padding:8px 0; color:white;"><input type="checkbox" class="u-${unit}" id="v-${gIdx}" value="${gIdx}"> <label for="v-${gIdx}">${word.de}</label></div>`;
         });
     });
     document.getElementById('menu-view').style.display = 'none';
@@ -117,7 +108,7 @@ function launchTrainer(list, modeName) {
 function startAll() { launchTrainer([...vocabData], "Alle"); }
 function startSelected() {
     const sel = Array.from(document.querySelectorAll('#selection-list input:checked')).map(cb => vocabData[cb.value]);
-    if(sel.length === 0) return alert("Wähle etwas aus!");
+    if(sel.length === 0) return alert("Huch! Da hast du keine Vokabeln ausgewählt. 😊");
     launchTrainer(sel, "Auswahl");
 }
 function startErrorMode() { launchTrainer([...wrongWords], "Fehler"); }
@@ -165,15 +156,12 @@ function checkQuiz(isCorrect, btn, correctWord) {
         setTimeout(() => nextCard(true), 800);
     } else {
         btn.classList.add('opt-wrong');
-        // Richtige Antwort grün markieren zum Lernen
         allBtns.forEach(b => {
             if(b.innerText === correctWord) b.classList.add('opt-correct');
         });
-        setTimeout(() => nextCard(false), 1800); // Längere Pause zum Einprägen
+        setTimeout(() => nextCard(false), 1800); 
     }
 }
-
-function flipCard() { document.getElementById('card').classList.toggle('flipped'); }
 
 function nextCard(isCorrect) {
     if (isCorrect) {
@@ -191,7 +179,7 @@ function nextCard(isCorrect) {
     currentIndex++;
     if (currentIndex >= activeList.length) {
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        alert("Runde beendet! ✨");
+        alert("Runde beendet! ✨ Super gemacht!");
         showMenu();
     } else {
         updateUI();
@@ -199,18 +187,23 @@ function nextCard(isCorrect) {
     }
 }
 
+// Unveränderte Logik-Funktionen
+function flipCard() { document.getElementById('card').classList.toggle('flipped'); }
+function resetPoints() { if (confirm("Punkte auf Null setzen?")) { localStorage.clear(); location.reload(); } }
+function setMode(mode) { currentTrainerMode = mode; localStorage.setItem('lottaMode', mode); updateModeButtons(); }
+function updateModeButtons() { document.getElementById('mode-flash-btn').classList.toggle('active', currentTrainerMode === 'flashcard'); document.getElementById('mode-quiz-btn').classList.toggle('active', currentTrainerMode === 'quiz'); }
+
 function updateUI() {
     document.getElementById('score').innerText = points;
     document.getElementById('streak').innerText = streak;
     localStorage.setItem('lottaPoints', points);
+    
+    // Schildkröten-Evolution
     let levelIdx = Math.min(Math.floor(points / 100), avatars.length - 1);
     document.getElementById('avatar-container').innerText = avatars[levelIdx];
-    const grades = ["Newbie 🚀", "Learner ✅", "Trainee 📚", "Advanced 💡", "Expert 🔥", "Pro ✨", "Master 👑", "Legend 🏆"];
+    
+    const grades = ["Lehrling 🌱", "Entdecker ✨", "Schüler 📚", "Kenner 💡", "Experte 🔥", "Meister 👑", "Legende 🏆"];
     document.getElementById('grade').innerText = grades[levelIdx] || grades[grades.length-1];
-}
-
-function resetPoints() {
-    if (confirm("Fortschritt löschen?")) { localStorage.clear(); location.reload(); }
 }
 
 showMenu();
